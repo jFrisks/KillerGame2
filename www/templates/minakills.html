@@ -1,0 +1,15 @@
+<ion-view class="hem" title="Mina Kills">
+    <ion-content padding="true" class="has-header">
+        <h1 ng-if="userdata.score <= 1">{{userdata.score}} Dödad</h1>
+        <h1 ng-if="userdata.score>1">{{userdata.score}} Dödade</h1>
+        <ion-list>
+            <ion-item class="item-thumbnail-left">
+                <img src="/img/avatar-img.png">
+                <h2>Plats -- av {{serverinfo.players}}</h2>
+                <p>50%</p>
+            </ion-item>
+            <ion-item class="item-divider">Dina senaste kills</ion-item>
+            <ion-item ng-if="userdata.killed != null || userdata.killed = 1" ng-repeat="victim in userdata">{{victim.killed}}</ion-item>
+        </ion-list>
+    </ion-content>
+</ion-view>

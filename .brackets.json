@@ -1,0 +1,9 @@
+{
+    "jscodehints.detectedExclusions": [
+        "F:/PROJEKT/Appar/Killergame/KillerGame/gulpfile.js",
+        "F:/PROJEKT/Appar/Killergame/KillerGame/www/lib/ionic/js/ionic.min.js",
+        "F:/PROJEKT/Appar/Killergame/KillerGame/www/lib/ionic/js/ionic.js",
+        "F:/PROJEKT/Appar/Killergame/KillerGame/www/lib/ionic/js/ionic.bundle.min.js",
+        "F:/PROJEKT/Appar/Killergame/KillerGame/www/js/routes.js"
+    ]
+}

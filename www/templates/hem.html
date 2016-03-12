@@ -1,0 +1,25 @@
+<ion-view title="Hem" class="hem">
+    <ion-content padding="true" scroll="true" class="has-header">
+        <!-- Replace this row with content info -->
+        
+        <!-- Home -->
+        <h3>Måltavla</h3>
+        <div>
+            <p>Hej {{userdata.name}}!</p>
+            <p>Ditt mål är {{userdata.target}}!</p>
+        </div>
+        <div class="list card">
+            <div class="item item-divider">Nyheter</div>
+            <div class="item item-body">
+                <h2>{{news.title}}</h2>
+                <h3>{{news.published | date:'MMM d, y h:mm:ss'}}</h3>
+                <p>{{news.content}}</p>
+            </div>
+        </div>
+    </ion-content>
+    <div class="button-bar">
+        <button ui-sref="minakills" class="button button-dark button-block  icon-left ion-android-checkmark-circle">Kills</button>
+        <button ui-sref="kill" class="button button-assertive button-block ">Kill</button>
+        <button ui-sref="topplista" class="button button-stable button-block  icon ion-trophy"></button>
+    </div>
+</ion-view>

@@ -1,0 +1,55 @@
+<ion-view title="Admin" class="admin">
+    <ion-content padding="true" scroll="true" class="has-header">
+        <!-- Replace this row with content info -->
+        
+        <!-- Home -->
+    <h1>Adminsidan - ändra info i spelet</h1>
+
+   <h3>Skriv en nyhet</h3>
+    <div class="list">
+        <label class="item item-input">
+            <span class="input-label">Rubrik</span>
+            <input type="text" ng-model="title" placeholder="Äntligen startar killergame!">
+        </label>
+        <label class="item item-input">
+            <span class="input-label">Nyhetstext</span>
+            <textarea ng-model="text" placeholder="Vi startar klockan 11:00 och kan därefter ändras"></textarea>
+        </label>
+        <button class="button button-block button-outline button-positive">
+            Lägg upp en bild?
+        </button>
+        <button class="button button-block button-balanced" ng-click="createNews(title, text)">
+            Spara nyheten
+        </button>
+    </div>
+    
+    <h3>Nyheten som visas...</h3>
+    <div class="list card">
+
+        <div class="item">
+            <h2>{{news.title}}</h2>
+            <p>{{news.published | date:'MMM d, y h:mm:ss'}}</p>
+        </div>
+
+        <div class="item item-body">
+            <p>
+                {{news.content}}
+            </p>
+            <p>
+                <a href="#" class="subdued">1 Like</a>
+                <a href="#" class="subdued">5 Comments</a>
+            </p>
+        </div>
+
+        <div class="item tabs tabs-secondary tabs-icon-left">
+            <a class="tab-item" href="#">
+                <i class="icon ion-thumbsup"></i> Like
+            </a>
+            <a class="tab-item" href="#">
+                <i class="icon ion-chatbox"></i> Comment
+            </a>
+        </div>
+
+    </div>
+
+</ion-view>

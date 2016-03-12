@@ -1,0 +1,19 @@
+<ion-view title="Logga in">
+    <ion-content padding="true" class="has-header">
+        <form class="list">
+            <ion-list>
+                <label class="item item-input">
+                    <span class="input-label">Namn</span>
+                    <input ng-model="email" type="text" placeholder="Jonathan Frisk">
+                </label>
+                <label class="item item-input">
+                    <span class="input-label">Lösenord</span>
+                    <input ng-model="password" type="password" placeholder="Killergame123">
+                </label>
+            </ion-list>
+            <div class="spacer" style="height: 40px;"></div>
+            <button ng-click="login(email, password)" class="button button-balanced button-block ">Logga In</button>
+            <a ui-sref="skapakonto" class="button button-positive button-clear button-block ">Skapa en ny killer</a>
+        </form>
+    </ion-content>
+</ion-view>
