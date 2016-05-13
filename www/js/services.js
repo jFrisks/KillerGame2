@@ -23,6 +23,7 @@ services.factory('Users', function($firebaseArray, $firebaseObject, FirebaseUrl)
 });
 
 // Gives addres to usersRef
+
 services.factory('userLocation', ["$firebaseArray", 'fbAuth',
   function($firebaseArray, fbAuth) {
       var Auth = fbAuth.$getAuth();
@@ -35,10 +36,12 @@ services.factory('userLocation', ["$firebaseArray", 'fbAuth',
 
 services.factory('userDataFactory', function(fbAuth, $firebaseObject, $filter, $scope) {
     
+    var Auth = fbAuth.$getAuth();
+    var userRef = new Firebase("https://blinding-heat-3134.firebaseio.com/users/"+ Auth.uid);
     
     this.createNewUserData = function(fullName) {
-        var Auth = fbAuth.$getAuth();
-        var userRef = new Firebase("https://blinding-heat-3134.firebaseio.com/users/"+ Auth.uid);
+        //var Auth = fbAuth.$getAuth();
+        //var userRef = new Firebase("https://blinding-heat-3134.firebaseio.com/users/"+ Auth.uid);
         var user = $firebaseObject(userRef);
         console.log(Auth.uid);
         user.name = fullName;
@@ -56,9 +59,15 @@ services.factory('userDataFactory', function(fbAuth, $firebaseObject, $filter, $
     }
     
     this.getUserData = function() {
-        var Auth = fbAuth.$getAuth();
-        var userRef = new Firebase("https://blinding-heat-3134.firebaseio.com/users/"+ Auth.uid);
+        //var Auth = fbAuth.$getAuth();
+        //var userRef = new Firebase("https://blinding-heat-3134.firebaseio.com/users/"+ Auth.uid);
         return $firebaseObject(userRef);
     }
     
+    this.killUser = function(){
+        var Auth = fbAuth.$getAuth();
+        
+        //change alive in scores & uid
+        
+    };
 });

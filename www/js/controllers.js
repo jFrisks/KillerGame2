@@ -5,7 +5,7 @@ var appCtrl = angular.module('app.controllers', []);
 appCtrl.controller('firebaseCtrl', function($scope, $state, fbAuth, $firebaseObject) {
     var ref = new Firebase("https://blinding-heat-3134.firebaseio.com");
     
-    var readUserData = function(){
+    var readUserData = function(authData){
         var Auth = fbAuth.$getAuth();
         if(Auth!=null){
             $scope.userdata = $firebaseObject(ref.child('users').child(Auth.uid));
@@ -14,6 +14,8 @@ appCtrl.controller('firebaseCtrl', function($scope, $state, fbAuth, $firebaseObj
             $state.go("loggain");
         }
     }
+    
+    //On auth change update userdtaa
     
     $scope.login = function(email, password) {
         fbAuth.$authWithPassword({
@@ -57,7 +59,7 @@ appCtrl.controller('firebaseCtrl', function($scope, $state, fbAuth, $firebaseObj
                 var user = $firebaseObject(userRef);
                 
                 user.name = fullName;
-                user.codeid = Auth.uid.slice(0, 6);;
+                user.codeid = Auth.uid.slice(0, 6);
                 user.score = 0;
                 user.alive = true;
                 user.killed = [];
@@ -70,9 +72,11 @@ appCtrl.controller('firebaseCtrl', function($scope, $state, fbAuth, $firebaseObj
                 });
                 
                 //Setting up person's score
+                var defaultScore = 0;
                 var scores = $firebaseObject(scoresref.child(Auth.uid));
                 console.log(scores);
-                scores.score = 0;
+                scores.score = defaultScore;
+                scores.alive = user.alive;
                 scores.name = fullName;
                 scores.$save().then(function(){}).catch(function(){});
                 
@@ -90,6 +94,7 @@ appCtrl.controller('firebaseCtrl', function($scope, $state, fbAuth, $firebaseObj
             createNewUserData(fullName);
             
             //Redirecting to home
+            readUserData();
             console.log("du loggades in med", authData.uid);
             $state.go("hem");
             
@@ -106,10 +111,24 @@ appCtrl.controller('hemCtrl', function($scope, fbAuth, $state, $firebaseObject) 
     var Auth = fbAuth.$getAuth();   
     var ref = new Firebase("https://blinding-heat-3134.firebaseio.com");
     var newsref = ref.child("news");
-    var scoreref = ref.child("score");
+    var scoreref = ref.child("scores");
     
+    var readUserData = function(authData){
+        var Auth = fbAuth.$getAuth();
+        if(Auth!=null){
+            $scope.userdata = $firebaseObject(ref.child('users').child(Auth.uid));
+        }
+        else{
+            $state.go("loggain");
+        }
+    }
     
+    //checks when auth updates
     $scope.auth = fbAuth;
+    $scope.auth.$onAuth(function(authData){
+        readUserData(authData);
+    });
+    
     //Checks everytime auth status updates for log out button
     $scope.auth.$onAuth(function(authData) {
         $scope.authData = authData;
@@ -122,18 +141,16 @@ appCtrl.controller('hemCtrl', function($scope, fbAuth, $state, $firebaseObject) 
         }
     });
     
+    //check toplist - filter top 5
+    var scoresSeven = scoreref.orderByChild("score");//.limitToFirst(7);
+    $scope.scoresTopSeven = $firebaseObject(scoresSeven);
+    console.log($scope.scoresTopSeven);
+    
     $scope.loggaut = function() {
         console.log("User logged out");
         fbAuth.$unauth();
         $state.go("loggain");
     };
-    
-    if(Auth!=null){
-        $scope.userdata = $firebaseObject(ref.child('users').child(Auth.uid));
-    }
-    else{
-        $state.go("loggain");
-    }
     
     
     
@@ -203,6 +220,16 @@ appCtrl.controller('adminCtrl', function($scope, $state, fbAuth, $firebaseObject
         user.$remove();
     };
     
+    $scope.removeUserData = function(){
+        //ta bort score
+        //ändra människocount
+        //ta bort userdata
+        //(Accountet kan du inte ta bort) - skit i det i nuläget - uppdatera userdata när den loggar in
+    };
+    
 });
 
- 
+ /*------------- ATT GÖRA ---------------*/
+//visa topplista (från scores)- 
+//när du loggar in kollar den om du har userdata - annars skapar den
+//när du tar bort userdata när du raderar

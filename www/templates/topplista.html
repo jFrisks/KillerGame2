@@ -8,15 +8,9 @@
                 <h2>Jonathan Frisk</h2>
                 <p>3 kills</p>
             </ion-item>
-            <ion-item class="item-thumbnail-left">
-                <img src="http://www.marichrisllc.com/wp-content/uploads/2014/08/MSP_492-_S.jpg">
-                <h2>Olle Malmberg</h2>
-                <p>2 Kills</p>
-            </ion-item>
-            <ion-item class="item-thumbnail-left">
-                <img src="https://www.k2awards.com/wp-content/uploads/2011/01/BG493Z-Victory-3rd-Place-Medal.png">
-                <h2>Fredrik Österberg</h2>
-                <p>1 Kill</p>
+            <ion-item class="item-thumbnail-left" ng-repeat="user in scoresTopSeven">
+                <h2>{{user.name}}</h2>
+                <p>{{user.score}} kills</p>
             </ion-item>
         </ion-list>
     </ion-content>
