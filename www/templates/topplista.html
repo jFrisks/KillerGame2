@@ -3,15 +3,11 @@
         <h1>Bästa Killers</h1>
         <div class="spacer" style="width: 300px; height: 23px;"></div>
         <ion-list>
-            <ion-item class="item-thumbnail-left">
-                <img src="http://previews.123rf.com/images/snake3d/snake3d1108/snake3d110800017/10375233-First-place-award-medal-golden-Achievement-champion-pride-badge-design-element-The-best-winner-motiv-Stock-Photo.jpg">
-                <h2>Jonathan Frisk</h2>
-                <p>3 kills</p>
-            </ion-item>
-            <ion-item class="item-thumbnail-left" ng-repeat="user in scoresTopSeven">
+            <ion-item class="item-thumbnail-left" ng-repeat="user in topUserList | orderBy:'-score'">
+                <img src="" alt="{{$index}}">
                 <h2>{{user.name}}</h2>
                 <p>{{user.score}} kills</p>
             </ion-item>
         </ion-list>
     </ion-content>
-</ion-view>
+</ion-view>k

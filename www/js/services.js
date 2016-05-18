@@ -34,10 +34,13 @@ services.factory('userLocation', ["$firebaseArray", 'fbAuth',
 ]);
 
 
-services.factory('userDataFactory', function(fbAuth, $firebaseObject, $filter, $scope) {
+services.service('userDataFactory', function(fbAuth, $firebaseObject, $filter, $scope) {
     
     var Auth = fbAuth.$getAuth();
+    var ref = new Firebase("https://blinding-heat-3134.firebaseio.com/users/");
     var userRef = new Firebase("https://blinding-heat-3134.firebaseio.com/users/"+ Auth.uid);
+    var scoreref = ref.child("scores");
+    
     
     this.createNewUserData = function(fullName) {
         //var Auth = fbAuth.$getAuth();
@@ -59,10 +62,23 @@ services.factory('userDataFactory', function(fbAuth, $firebaseObject, $filter, $
     }
     
     this.getUserData = function() {
-        //var Auth = fbAuth.$getAuth();
+        //var Auth = fbAuth.$getAuth
         //var userRef = new Firebase("https://blinding-heat-3134.firebaseio.com/users/"+ Auth.uid);
         return $firebaseObject(userRef);
     }
+    
+    
+    //Toplist
+    this.topList = function(amount){
+        var scores = scoreref.orderByChild("score").limitToFirst(amount);
+        var scoreObject = $firebaseObject(scores);
+        var scoresFromObject = scoreObject.keys(scoreObject)
+            .map(function(key){
+                return scoreObject[key];
+            });
+        return scoresFromObject;
+    };
+
     
     this.killUser = function(){
         var Auth = fbAuth.$getAuth();
@@ -70,4 +86,6 @@ services.factory('userDataFactory', function(fbAuth, $firebaseObject, $filter, $
         //change alive in scores & uid
         
     };
+    
+    return $firebaseObject(userRef);
 });

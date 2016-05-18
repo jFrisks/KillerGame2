@@ -19,6 +19,10 @@ $dark:                            #444 !default;
   position: absolute;
   bottom: -10px; }
 
+img {
+  font-size: 50px;
+  color: aqua; }
+
 /*!
   Ionicons, v2.0.1
   Created by Ben Sperry for the Ionic Framework, http://ionicons.com/

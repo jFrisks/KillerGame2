@@ -1,6 +1,12 @@
 var fb = new Firebase("https://blinding-heat-3134.firebaseio.com/");
 var appCtrl = angular.module('app.controllers', []);
 
+//deafault variables
+var defaultTarget = "Okänd";
+
+
+
+
 
 appCtrl.controller('firebaseCtrl', function($scope, $state, fbAuth, $firebaseObject) {
     var ref = new Firebase("https://blinding-heat-3134.firebaseio.com");
@@ -63,7 +69,7 @@ appCtrl.controller('firebaseCtrl', function($scope, $state, fbAuth, $firebaseObj
                 user.score = 0;
                 user.alive = true;
                 user.killed = [];
-                user.target = "UNKNOWN";
+                user.target = defaultTarget;
 
                 user.$save().then(function(userData) {
                 //Promise
@@ -106,15 +112,19 @@ appCtrl.controller('firebaseCtrl', function($scope, $state, fbAuth, $firebaseObj
 });
 
 
-   
-appCtrl.controller('hemCtrl', function($scope, fbAuth, $state, $firebaseObject) {
+appCtrl.controller('hemCtrl', ['$scope', 'fbAuth', '$state', '$firebaseObject', '$q', function($scope, fbAuth, $state, $firebaseObject, $q) {
+    
+    
     var Auth = fbAuth.$getAuth();   
     var ref = new Firebase("https://blinding-heat-3134.firebaseio.com");
     var newsref = ref.child("news");
     var scoreref = ref.child("scores");
+    var userref = ref.child("users");
     
-    var readUserData = function(authData){
-        var Auth = fbAuth.$getAuth();
+    
+    
+    
+    var readUserData = function(Auth){
         if(Auth!=null){
             $scope.userdata = $firebaseObject(ref.child('users').child(Auth.uid));
         }
@@ -122,6 +132,81 @@ appCtrl.controller('hemCtrl', function($scope, fbAuth, $state, $firebaseObject) 
             $state.go("loggain");
         }
     }
+    //read when no authdata is given
+    var readUserData = function(){
+        var defer = $q.defer();
+        var Auth = fbAuth.$getAuth();
+        
+        if(Auth!=null){
+            $scope.userdata = $firebaseObject(ref.child('users').child(Auth.uid));
+            //when loaded it continues
+            $scope.userdata.$loaded().then(function(){
+                defer.resolve('userdata loaded');
+                console.log("userdata loaded " + $scope.userdata);
+                readTargetName();
+            }).catch(function(){
+                console.log("couldn't get userdata with target");
+                defer.reject('userdata loading failed');
+            });
+        }
+        else{
+            $state.go("loggain");
+            defer.reject('Not logged in');
+        }
+        
+        return defer.promise;
+    }
+    
+    
+    //Read target - fires when changed
+    var readTargetName = function(){
+        var targetUid, targetName;
+        var targetObj;
+        
+        
+        if($scope.userdata==null){
+            console.log("ingen userdata");
+            readUserData().then(function(){
+                targetUid = $scope.userdata.target;
+                //om inget target finns
+                if(targetUid==defaultTarget){
+                    $scope.targetName = defaultTarget;
+                }
+                else{
+                    targetObj.$loaded().then(function(){
+                    targetName = targetObj.name;
+                        $scope.targetName = targetName;
+                    });
+                }
+                
+            });
+            
+            
+        }
+        else{
+            console.log("användardatan finns" + $scope.userdata);
+            targetUid = $scope.userdata.target;
+            //om inget target finns
+            if(targetUid==defaultTarget){
+                $scope.targetName = defaultTarget;
+            }
+            else{
+                targetObj.$loaded().then(function(){
+                targetName = targetObj.name;
+                    $scope.targetName = targetName;
+                });
+            }
+        }
+    };
+    
+    if(Auth!=null){
+        userref.child(Auth.uid).on('child_changed', function(childSnapshot){
+            console.log("din användardata uppdaterades och därför uppdaterades ditt mål");
+            readTargetName();
+        });
+    }
+
+    
     
     //checks when auth updates
     $scope.auth = fbAuth;
@@ -141,16 +226,59 @@ appCtrl.controller('hemCtrl', function($scope, fbAuth, $state, $firebaseObject) 
         }
     });
     
-    //check toplist - filter top 5
-    var scoresSeven = scoreref.orderByChild("score");//.limitToFirst(7);
-    $scope.scoresTopSeven = $firebaseObject(scoresSeven);
-    console.log($scope.scoresTopSeven);
+/////========== KILL SOMEONE ===========////
     
-    $scope.loggaut = function() {
-        console.log("User logged out");
-        fbAuth.$unauth();
-        $state.go("loggain");
-    };
+    var killTarget = function(codeID){
+        var targetID;
+        
+        //search for user's id and get id
+        userref.orderByChild("codeid").equalTo(codeID).on("value", function(snapshot){
+            targetID = snapshot.key();
+        });
+        
+        //change target to killed and remove target
+        var targetObject = $firebaseObject(targetID).$loaded().then(function(){
+            targetObject.alive = false;
+            targetObject.target = defaultTarget;
+            targetObject.$save();
+        });
+        
+        //update killer's score & killed[] + update server info
+        var killerObject = $firebaseObject(Auth.uid);
+        killerObject.$loaded().then(function(){
+            killerObject.killed.$add({foo: targetID});
+        });
+        
+    }
+    
+///===================================================///
+    //toplist
+    var getTopList = function(){
+        var scores = scoreref.orderByChild("score").limitToFirst(5);
+        var scoreObject = $firebaseObject(scores);
+        var objectWithBlanc;
+        scoreObject.$loaded().then(function(){
+            objectWithBlanc = Object.keys(scoreObject).map(function(key){
+                return scoreObject[key];
+            });
+
+            objectWithBlanc.splice(0,3);
+            $scope.topUserList = objectWithBlanc;
+        });
+
+
+        $scope.loggaut = function() {
+            console.log("User logged out");
+            fbAuth.$unauth();
+            $state.go("loggain");
+        };
+    }
+    
+    scoreref.orderByChild("score").limitToFirst(5).on('child_changed', function(){
+        getTopList();
+    });
+    
+    
     
     
     
@@ -171,7 +299,9 @@ appCtrl.controller('hemCtrl', function($scope, fbAuth, $state, $firebaseObject) 
     
     //Last kills - killer and victim
     //
-    
+    angular.element(document).ready(function(){
+        getTopList();
+    });
     
     //----ADMIN SIDE------
     //Generate everyone's target
@@ -180,10 +310,11 @@ appCtrl.controller('hemCtrl', function($scope, fbAuth, $state, $firebaseObject) 
     //Remove Players & Add - everyone (not done)
     //
 
-});
+}]);
    
 appCtrl.controller('adminCtrl', function($scope, $state, fbAuth, $firebaseObject) {
     var ref = new Firebase("https://blinding-heat-3134.firebaseio.com");
+    var userref = ref.child("users");
     var newsref = ref.child("news");
     $scope.news = $firebaseObject(newsref);
 
@@ -227,7 +358,47 @@ appCtrl.controller('adminCtrl', function($scope, $state, fbAuth, $firebaseObject
         //(Accountet kan du inte ta bort) - skit i det i nuläget - uppdatera userdata när den loggar in
     };
     
+    
+    
+    /*=============== GE OFFER ===============*/
+   
+    $scope.giveEveryoneTarget = function(){
+        //initiering---
+        //Loopa igenom alla användare - lägg till nästa användare som den valdes offer. (om vilkor stämmer = lever, aktiverad)
+        
+        var lastUid = "";
+        var firstUid = "";
+        userref.orderByKey().on("child_added", function(snapshot){
+            //save each user as object - editing it then saving it
+            var userData = $firebaseObject(userref.child(snapshot.key()));
+            
+            userData.$loaded().then(function(){
+                userData.target = lastUid;
+                console.log(userData);
+                // sets this id to last visited id
+                if(lastUid===""){
+                    firstUid=snapshot.key();
+                }
+                
+                lastUid = snapshot.key();                
+                userData.$save();
+            });
+            
+            
+        });
+        
+    };
 });
+
+
+
+/*
+============= VAD JAG LÄRT MIG ================
+- Lägg upp struktur i kod för uppdateringar varje sekund, när en del i databasen ändras, när du laddar om, när du är inloggad, när du inte är inloggad osv. (Nu fick jag fixa fulingar då jag inte var inloggad men den kolla efter uid.)
+- laddar ner anvädardata oinödigt ofta. kolla för att spara (och uppdatera när den behövs) - för att slippa använda data.
+- databasen kan ha default-värde (ex. 0) där view ändrar vad det står...
+*/
+
 
  /*------------- ATT GÖRA ---------------*/
 //visa topplista (från scores)- 
