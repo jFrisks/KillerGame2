@@ -173,6 +173,7 @@ appCtrl.controller('hemCtrl', ['$scope', 'fbAuth', '$state', '$firebaseObject', 
                     $scope.targetName = defaultTarget;
                 }
                 else{
+                    targetObj = $firebaseObject(scoreref.child(targetUid));
                     targetObj.$loaded().then(function(){
                     targetName = targetObj.name;
                         $scope.targetName = targetName;
@@ -191,8 +192,9 @@ appCtrl.controller('hemCtrl', ['$scope', 'fbAuth', '$state', '$firebaseObject', 
                 $scope.targetName = defaultTarget;
             }
             else{
+                targetObj = $firebaseObject(scoreref.child(targetUid));
                 targetObj.$loaded().then(function(){
-                targetName = targetObj.name;
+                    targetName = targetObj.name;
                     $scope.targetName = targetName;
                 });
             }
@@ -228,25 +230,39 @@ appCtrl.controller('hemCtrl', ['$scope', 'fbAuth', '$state', '$firebaseObject', 
     
 /////========== KILL SOMEONE ===========////
     
-    var killTarget = function(codeID){
+    $scope.killTarget = function(codeID){
+        console.log("starting killing process...");
         var targetID;
         
         //search for user's id and get id
-        userref.orderByChild("codeid").equalTo(codeID).on("value", function(snapshot){
-            targetID = snapshot.key();
+        //chech if codeid of user matches ure target
+        userref.orderByChild("codeid").equalTo(codeID).once("value", function(snapshot){
+            console.log($scope.userdata.target);
+            console.log(snapshot.val());
+            
+            if(snapshot.val()==$scope.userdata.target){
+                console.log("koden och target stämmer!");
+                console.log(snapshot.key());
+                targetID = snapshot.key();
+            }
+            else{
+                console.log("kod och target stämmer ej");
+            }
         });
         
         //change target to killed and remove target
-        var targetObject = $firebaseObject(targetID).$loaded().then(function(){
+        var targetObject = $firebaseObject(userref.child(targetID));
+        targetObject.$loaded().then(function(){
             targetObject.alive = false;
             targetObject.target = defaultTarget;
             targetObject.$save();
         });
         
         //update killer's score & killed[] + update server info
-        var killerObject = $firebaseObject(Auth.uid);
+        var killerObject = $firebaseObject(userref.child(Auth.uid));
         killerObject.$loaded().then(function(){
             killerObject.killed.$add({foo: targetID});
+            killerObject.$save();
         });
         
     }

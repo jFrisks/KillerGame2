@@ -8,9 +8,9 @@
             <h1>Anmäl Kill</h1>
             <label class="item item-input" name="codeOwn">
                 <span class="input-label">Offrets Kod</span>
-                <input type="text" placeholder="57B234F">
+                <input type="text" placeholder="57B234F" ng-model="code.input">
             </label>
         </form>
-        <button ng-click="" class="button button-assertive button-block ">Anmäl Kill</button>
+        <button ng-click="killTarget(code.input);" class="button button-assertive button-block ">Anmäl Kill</button>
     </ion-content>
 </ion-view>
