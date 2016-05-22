@@ -4,7 +4,7 @@
         <div class="spacer" style="width: 300px; height: 23px;"></div>
         <ion-list>
             <ion-item class="item-thumbnail-left" ng-repeat="user in topUserList | orderBy:'-score'">
-                <img src="" alt="{{$index}}">
+                <img src="" alt="{{$index+1}}">
                 <h2>{{user.name}}</h2>
                 <p>{{user.score}} kills</p>
             </ion-item>

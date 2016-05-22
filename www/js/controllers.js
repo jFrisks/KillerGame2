@@ -120,6 +120,7 @@ appCtrl.controller('hemCtrl', ['$scope', 'fbAuth', '$state', '$firebaseObject', 
     var newsref = ref.child("news");
     var scoreref = ref.child("scores");
     var userref = ref.child("users");
+    var serverref = ref.child("server");
     
     
     
@@ -231,27 +232,68 @@ appCtrl.controller('hemCtrl', ['$scope', 'fbAuth', '$state', '$firebaseObject', 
 /////========== KILL SOMEONE ===========////
     
     $scope.killTarget = function(codeID){
-        console.log("starting killing process...");
-        var targetID;
+        var targetData, targetID;
+        var targetsTarget;
         
-        //search for user's id and get id
-        //chech if codeid of user matches ure target
-        userref.orderByChild("codeid").equalTo(codeID).once("value", function(snapshot){
-            console.log($scope.userdata.target);
-            console.log(snapshot.val());
+        ///// --- small functions ////////////
+        
+        var updateTargetStatus = function(){
+            targetData.alive = false;
+            //saving targets target before their death
+            targetsTarget = targetData.target;
+            //resets targets target to def
+            targetData.target = defaultTarget;
+            targetData.$save();
+        };
+        
+        var updateScoreKilled = function(){
             
-            if(snapshot.val()==$scope.userdata.target){
-                console.log("koden och target stämmer!");
-                console.log(snapshot.key());
-                targetID = snapshot.key();
+            //update score info
+            var userScoreData = $firebaseObject(scoreref.child(Auth.uid));
+            userScoreData.$loaded().then(function(){
+                userScoreData.score+=1;
+                userScoreData.$save();
+            });
+            
+            //update userdata info
+            //$scope.userdata.killed.$add({foo: targetID});
+            $scope.userdata.score++;
+            $scope.userdata.target = targetsTarget;
+            $scope.userdata.$save();
+            
+            //updates server info
+            var serverInfo = $firebaseObject(serverref);
+            serverInfo.$loaded().then(function(){
+                serverInfo.playersAlive -=1;
+                serverInfo.$save();
+            }).catch();
+        };
+        
+        
+        //// MAIN FUNCTION ///////
+        console.log("starting killing process...");
+        var targetID = $scope.userdata.target;
+        
+        var targetData = $firebaseObject(userref.child(targetID));
+        targetData.$loaded().then(function(){
+            //get targets code id - see if matching with id you got
+            var realCodeID = targetData.codeid;
+            if(codeID === realCodeID && targetData.alive!=false){
+                //Kör koden om den stämmer
+                console.log("du har koden till ditt target");
+                updateTargetStatus();
+                updateScoreKilled();
             }
             else{
-                console.log("kod och target stämmer ej");
+                console.log("koden du har är inte din targets eller så är den redan död");
             }
-        });
+        }).catch();
+
         
+        /*
         //change target to killed and remove target
         var targetObject = $firebaseObject(userref.child(targetID));
+        
         targetObject.$loaded().then(function(){
             targetObject.alive = false;
             targetObject.target = defaultTarget;
@@ -264,7 +306,7 @@ appCtrl.controller('hemCtrl', ['$scope', 'fbAuth', '$state', '$firebaseObject', 
             killerObject.killed.$add({foo: targetID});
             killerObject.$save();
         });
-        
+        */
     }
     
 ///===================================================///
